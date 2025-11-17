@@ -11,10 +11,10 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional, List
 
-# Example schemas (replace with your own):
+# Example schemas adjusted for the store app
 
 class User(BaseModel):
     """
@@ -22,8 +22,8 @@ class User(BaseModel):
     Collection name: "user" (lowercase of class name)
     """
     name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
+    email: EmailStr = Field(..., description="Email address")
+    address: Optional[str] = Field(None, description="Address")
     age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
     is_active: bool = Field(True, description="Whether user is active")
 
@@ -37,6 +37,34 @@ class Product(BaseModel):
     price: float = Field(..., ge=0, description="Price in dollars")
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
+    images: List[str] = Field(default_factory=list, description="Image URLs")
+    sizes: List[str] = Field(default_factory=list, description="Available sizes")
+    colors: List[str] = Field(default_factory=list, description="Available colors")
+    tags: List[str] = Field(default_factory=list, description="Search tags")
+
+class OrderItem(BaseModel):
+    product_id: str = Field(..., description="ID of the product")
+    title: str = Field(..., description="Product title for redundancy")
+    price: float = Field(..., ge=0, description="Unit price at time of order")
+    quantity: int = Field(..., ge=1, description="Quantity ordered")
+    size: Optional[str] = Field(None, description="Selected size")
+    color: Optional[str] = Field(None, description="Selected color")
+    image: Optional[str] = Field(None, description="Thumbnail image")
+
+class CustomerInfo(BaseModel):
+    name: str
+    email: EmailStr
+    address: str
+
+class Order(BaseModel):
+    """
+    Orders collection schema
+    Collection name: "order" (lowercase of class name)
+    """
+    items: List[OrderItem]
+    total: float = Field(..., ge=0)
+    customer: CustomerInfo
+    status: str = Field("pending", description="Order status")
 
 # Add your own schemas here:
 # --------------------------------------------------
